@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdbool.h>
 
-#define MAX_ASTEROIDES 8
+#define MAX_ASTEROIDES 8 //TESTE
 #define MAX_TIROS 10
 
 typedef struct {
