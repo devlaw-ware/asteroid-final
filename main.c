@@ -202,6 +202,15 @@ void AtualizarJogo() {
         }
     }
 }
+/*Percorre todos os asteroides do jogo.
+
+Para cada asteroide ativo:
+
+    - Atualiza sua posição, somando a velocidade atual nas direções X e Y.
+    - Se o asteroide sair para fora da tela (direita, esquerda, em cima ou embaixo), ele reaparece do lado oposto (wrap-around), mantendo o movimento contínuo pelo espaço do 
+    jogo.
+
+*/
 
 void AtualizarAsteroides() {
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
@@ -218,6 +227,15 @@ void AtualizarAsteroides() {
     }
 }
 
+/*
+    Função AtualizarTiros:
+    - Percorre todos os tiros do jogo.
+    - Para cada tiro ativo:
+        - Atualiza sua posição somando a velocidade atual em X e Y.
+        - Se o tiro sair fora da tela (fora dos limites 0-800 em X ou 0-600 em Y),
+          desativa o tiro (tiros[i].ativo = false).
+    - Isso garante que apenas tiros visíveis permaneçam ativos e se movam.
+*/
 void AtualizarTiros() {
     for (int i = 0; i < MAX_TIROS; i++) {
         if (!tiros[i].ativo) continue;
@@ -231,6 +249,20 @@ void AtualizarTiros() {
     }
 }
 
+/*
+    Função VerificarColisoes:
+    - Verifica colisões entre tiros ativos e asteroides ativos.
+    - Para cada tiro:
+        - Calcula a distância entre o tiro e o asteroide.
+        - Se a distância for menor que o raio do asteroide (colisão):
+            1. Desativa o tiro
+            2. Se o asteroide for grande (tamanho > 1):
+                - Divide em 2 asteroides menores (tamanho reduzido)
+                - Cria novos asteroides em posições próximas com deslocamento aleatório
+            3. Desativa o asteroide original
+            4. Adiciona 100 pontos à pontuação
+            5. Interrompe a verificação para este tiro (break)
+*/
 void VerificarColisoes() {
     for (int i = 0; i < MAX_TIROS; i++) {
         if (!tiros[i].ativo) continue;
@@ -269,6 +301,15 @@ void VerificarColisoes() {
         }
     }
 
+    /*
+    Verificação de colisões entre a nave e os asteroides:
+    - Percorre todos os asteroides.
+    - Para cada asteroide ativo e enquanto a nave estiver ativa:
+        - Calcula a distância entre o centro da nave e o centro do asteroide.
+        - Se a distância for menor que o raio do asteroide mais 10 (tolerância para o tamanho da nave):
+            - Diminui uma vida.
+            - Desativa a nave (pode indicar fim de jogo ou respawn).
+*/
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
         if (!asteroides[i].ativo || !nave.ativo) continue;
 
@@ -282,7 +323,7 @@ void VerificarColisoes() {
         }
     }
 }
-
+// Rafael: comentar daqui pra baixo o resto do codigo e sua parte
 void DesenharJogo() {
     BeginDrawing();
     ClearBackground(BLACK);
@@ -325,4 +366,7 @@ void DesenharJogo() {
     }
 
     EndDrawing();
+
 }
+
+
