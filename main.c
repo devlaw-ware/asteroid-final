@@ -6,113 +6,167 @@
 #define MAX_ASTEROIDES 8
 #define MAX_TIROS 10
 
-/*
-    Declaramos todos os atributos necessários para representar um asteroide no jogo
-    incluido: Posição, movimento, tamanho e estado.
+// ESTRUTURAS DE DADOS PRINCIPAIS
+
+/* 
+Representa os inimigos/obstáculos do jogo com:
+- Posição e velocidade
+- Tipo (define tamanho/comportamento)
+- Hitbox para detecção de colisão
+- Flag de estado ativo/inativo 
 */
 
 typedef struct {
-    Vector2 posicao; // Armazena as coordenadas (x,y) da posição do asteroide
-    Vector2 velocidade; // Vetor que define a direção e velocidade do movimento
-    int tamanho; // 3=grande, 2=médio, 1=pequeno (define o tamanho visual e de colisão)
-    float raio; // Raio de colisão usado para detecção de impactos
-    bool ativo; // Indica se o asteroide está atualmente no jogo (true/false)
+    Vector2 posicao;
+    Vector2 velocidade;
+    int tamanho;
+    float raio;
+    bool ativo;
 } Asteroide;
 
-// Definimos a estrutura da nave, que contém propriedades adicionais como rotação e acelaração, utilizados no controle do jogador
+/* 
+Controla a nave do jogador com:
+- Posição, velocidade e aceleração
+- Rotação para direcionamento
+- Estado de atividade (vivo/morto) 
+*/
 
 typedef struct {
-    Vector2 posicao; // Posição atual da nave na tela
-    Vector2 velocidade; // Velocidade atual da nave
-    float rotacao; // Ângulo de rotação da nave (em graus ou radianos)
-    Vector2 aceleracao; // Aceleração aplicada à nave (quando o jogador acelera)
-    bool ativo; // Indica se a nave está ativa (o jogador ainda está vivo)
+    Vector2 posicao;
+    Vector2 velocidade;
+    float rotacao;
+    Vector2 aceleracao;
+    bool ativo;
 } Nave;
 
-// Estrutura mais simples que representa os tiros disparados pela nave, com apenas posição, velocidade e estado.
+/*
+Gerencia os projéteis disparados com:
+- Posição e velocidade constante
+- Flag para controle de projéteis ativos 
+*/
 
 typedef struct {
-    Vector2 posicao; // Posição atual do tiro
-    Vector2 velocidade; // Velocidade constante do tiro
-    bool ativo; // Indica se o tiro está ativo e deve ser renderizado
+    Vector2 posicao;
+    Vector2 velocidade;
+    bool ativo;
 } Tiro;
 
-// Declaração de Variáveis Globais
+// VARIÁVEIS GLOBAIS
 
-Nave nave; // Cria uma instância da nave do jogador
-Asteroide asteroides[MAX_ASTEROIDES]; // Array com capacidade para MAX_ASTEROIDES asteroides
-Tiro tiros[MAX_TIROS]; // Array com capacidade para MAX_TIROS tiros simultâneos
-int pontuacao = 0; // Pontuação do jogador, inicializada em 0
-int vidas = 3; // Número de vidas do jogador, começa com 3
+/*
+Contém todos os elementos do jogo:
+- Instância do jogador
+- Array de inimigos com limite máximo
+- Array de projéteis ativos
+- Pontuação e vidas do jogador 
+*/
 
-// Declaração de Funções
+Nave nave;
+Asteroide asteroides[MAX_ASTEROIDES];
+Tiro tiros[MAX_TIROS];
+int pontuacao = 0;
+int vidas = 5;
 
-void IniciarJogo(); // Inicializa/reseta todos os elementos do jogo para o estado inicial
-void AtualizarJogo(); // Contém a lógica principal de atualização do jogo (chamada a cada frame)
-void DesenharJogo(); // Responsável por renderizar todos os elementos gráficos do jogo
-void CriarAsteroide(int index, Vector2 pos, int tamanho); //  Instancia um novo asteroide na posição especificada
-void AtualizarAsteroides(); // Atualiza posição e estado de todos os asteroides ativos
-void AtualizarTiros(); // Atualiza posição e estado de todos os tiros ativos
-void VerificarColisoes(); // Detecta colisões entre nave/tiros/asteroides e aplica as consequências
+// PROTÓTIPOS DE FUNÇÕES
+
+/*
+Funções principais do game loop:
+- IniciarJogo: Inicializa/reseta o estado do jogo
+- AtualizarJogo: Lógica principal por frame
+- DesenharJogo: Renderização gráfica 
+*/
+
+void IniciarJogo();
+void AtualizarJogo();
+void DesenharJogo();
+
+/*
+Funções de gerenciamento específico:
+- CriarAsteroide: Cria inimigos em posições específicas
+- AtualizarAsteroides/AtualizarTiros: Atualiza estados
+- VerificarColisoes: Detecção de colisões entre entidades
+*/
+
+void CriarAsteroide(int index, Vector2 pos, int tamanho);
+void AtualizarAsteroides();
+void AtualizarTiros();
+void VerificarColisoes();
+
+/* 
+Programa principal que controla o ciclo de vida do jogo:
+- Inicializa a janela e sistemas
+- Executa o loop principal de jogo
+- Gerencia recursos até o encerramento
+*/
 
 int main() {
-    InitWindow(800, 600, "Asteroides BR"); // Cria uma janela de 800x600 pixels com o título "Asteroides BR"
-    SetTargetFPS(60); // Define a taxa de atualização para 60 quadros por segundo
+    InitWindow(800, 600, "Asteroides BR");
+    SetTargetFPS(60);
 
-    IniciarJogo(); // Chama a função de inicialização do jogo
+    IniciarJogo();
 
-    while (!WindowShouldClose()) { // Loop principal do jogo (executa enquanto a janela não for fechada)
-        AtualizarJogo(); // Atualiza a lógica do jogo
-        DesenharJogo(); // Renderiza os elementos do jogo
+    while (!WindowShouldClose()) {
+        AtualizarJogo();
+        DesenharJogo();
     }
 
-    CloseWindow(); // Fecha a janela quando o loop termina
+    CloseWindow();
     return 0;
 }
 
+/* 
+Inicializa todos os sistemas do jogo:
+- Configura o jogador com valores padrão
+- Prepara sistemas de pontuação e vidas
+- Cria pool de inimigos e projéteis 
+*/
+
 void IniciarJogo() {
-    nave = (Nave){ // Inicializa a estrutura da nave do jogador
-        .posicao = {400, 300}, // Posição inicial no centro da tela (400,300)
-        .velocidade = {0, 0}, // Velocidade inicial zero
-        .rotacao = 0, // Sem rotação inicial
-        .aceleracao = {0, 0}, // Sem aceleração inicial
-        .ativo = true // Nave ativa
+    nave = (Nave){
+        .posicao = {400, 300},
+        .velocidade = {0, 0},
+        .rotacao = 0, 
+        .aceleracao = {0, 0},
+        .ativo = true
     };
 
-    pontuacao = 0; // Zera a pontuação
-    vidas = 3; // Define 3 vidas iniciais
-
-    // A estrutura de repetição abaixo cria asteroides iniciais
+    pontuacao = 0;
+    vidas = 5;
 
     for (int i = 0; i < MAX_ASTEROIDES; i++) { 
         CriarAsteroide(i, (Vector2){GetRandomValue(0, 800), GetRandomValue(0, 600)}, 3);
-    } // Cria asteroides de tamanho 3 em posições aleatórias na tela
-
-    // A estrutura de repetição abaixo inicializa os tiros
+    }
 
     for (int i = 0; i < MAX_TIROS; i++) {
         tiros[i].ativo = false;
-    } // Define todos os tiros como inativos inicialmente
+    }
 }
 
-void CriarAsteroide(int index, Vector2 pos, int tamanho) { //  Define a posição inicial do asteroide
-    asteroides[index].posicao = pos; 
-    asteroides[index].velocidade = (Vector2){ // Atribui uma velocidade aleatória entre -1.5 e 1.5 em ambos os eixos
-        (float)GetRandomValue(-15, 15) / 10.0f, // Velocidade X aleatória
-        (float)GetRandomValue(-15, 15) / 10.0f // Velocidade Y aleatória
-    }; 
-    asteroides[index].tamanho = tamanho; // Configura o tamanho do asteroide (3-grande, 2-médio, 1-pequeno)
-    asteroides[index].ativo = true; // Ativa o asteroide para que ele apareça no jogo
+/*
+Gera inimigos com configurações específicas:
+- Posiciona em coordenadas aleatórias
+- Define propriedades baseadas no tipo (tamanho)
+- Configura sistemas de colisão adequados 
+*/
 
-    switch (tamanho) { // Define o raio de colisão baseado no tamanho do asteroide
+void CriarAsteroide(int index, Vector2 pos, int tamanho) {
+    asteroides[index].posicao = pos; 
+    asteroides[index].velocidade = (Vector2){
+        (float)GetRandomValue(-15, 15) / 10.0f,
+        (float)GetRandomValue(-15, 15) / 10.0f
+    }; 
+    asteroides[index].tamanho = tamanho;
+    asteroides[index].ativo = true;
+
+    switch (tamanho) {
         case 3: asteroides[index].raio = 40; 
-                break; // Raio para asteroides grandes
+                break;
         case 2: asteroides[index].raio = 25; 
-                break; // Raio para asteroides médios
+                break;
         case 1: asteroides[index].raio = 15; 
-                break; // Raio para asteroides pequenos
+                break;
         default: asteroides[index].raio = 20; 
-                break; // Raio padrão para tamanhos inválidos
+                break;
     } 
 }
 
