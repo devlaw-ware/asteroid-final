@@ -6,167 +6,113 @@
 #define MAX_ASTEROIDES 8
 #define MAX_TIROS 10
 
-// ESTRUTURAS DE DADOS PRINCIPAIS
-
-/* 
-Representa os inimigos/obstáculos do jogo com:
-- Posição e velocidade
-- Tipo (define tamanho/comportamento)
-- Hitbox para detecção de colisão
-- Flag de estado ativo/inativo 
+/*
+    Declaramos todos os atributos necessários para representar um asteroide no jogo
+    incluido: Posição, movimento, tamanho e estado.
 */
 
 typedef struct {
-    Vector2 posicao;
-    Vector2 velocidade;
-    int tamanho;
-    float raio;
-    bool ativo;
+    Vector2 posicao; // Armazena as coordenadas (x,y) da posição do asteroide
+    Vector2 velocidade; // Vetor que define a direção e velocidade do movimento
+    int tamanho; // 3=grande, 2=médio, 1=pequeno (define o tamanho visual e de colisão)
+    float raio; // Raio de colisão usado para detecção de impactos
+    bool ativo; // Indica se o asteroide está atualmente no jogo (true/false)
 } Asteroide;
 
-/* 
-Controla a nave do jogador com:
-- Posição, velocidade e aceleração
-- Rotação para direcionamento
-- Estado de atividade (vivo/morto) 
-*/
+// Definimos a estrutura da nave, que contém propriedades adicionais como rotação e acelaração, utilizados no controle do jogador
 
 typedef struct {
-    Vector2 posicao;
-    Vector2 velocidade;
-    float rotacao;
-    Vector2 aceleracao;
-    bool ativo;
+    Vector2 posicao; // Posição atual da nave na tela
+    Vector2 velocidade; // Velocidade atual da nave
+    float rotacao; // Ângulo de rotação da nave (em graus ou radianos)
+    Vector2 aceleracao; // Aceleração aplicada à nave (quando o jogador acelera)
+    bool ativo; // Indica se a nave está ativa (o jogador ainda está vivo)
 } Nave;
 
-/*
-Gerencia os projéteis disparados com:
-- Posição e velocidade constante
-- Flag para controle de projéteis ativos 
-*/
+// Estrutura mais simples que representa os tiros disparados pela nave, com apenas posição, velocidade e estado.
 
 typedef struct {
-    Vector2 posicao;
-    Vector2 velocidade;
-    bool ativo;
+    Vector2 posicao; // Posição atual do tiro
+    Vector2 velocidade; // Velocidade constante do tiro
+    bool ativo; // Indica se o tiro está ativo e deve ser renderizado
 } Tiro;
 
-// VARIÁVEIS GLOBAIS
+// Declaração de Variáveis Globais
 
-/*
-Contém todos os elementos do jogo:
-- Instância do jogador
-- Array de inimigos com limite máximo
-- Array de projéteis ativos
-- Pontuação e vidas do jogador 
-*/
+Nave nave; // Cria uma instância da nave do jogador
+Asteroide asteroides[MAX_ASTEROIDES]; // Array com capacidade para MAX_ASTEROIDES asteroides
+Tiro tiros[MAX_TIROS]; // Array com capacidade para MAX_TIROS tiros simultâneos
+int pontuacao = 0; // Pontuação do jogador, inicializada em 0
+int vidas = 3; // Número de vidas do jogador, começa com 3
 
-Nave nave;
-Asteroide asteroides[MAX_ASTEROIDES];
-Tiro tiros[MAX_TIROS];
-int pontuacao = 0;
-int vidas = 5;
+// Declaração de Funções
 
-// PROTÓTIPOS DE FUNÇÕES
-
-/*
-Funções principais do game loop:
-- IniciarJogo: Inicializa/reseta o estado do jogo
-- AtualizarJogo: Lógica principal por frame
-- DesenharJogo: Renderização gráfica 
-*/
-
-void IniciarJogo();
-void AtualizarJogo();
-void DesenharJogo();
-
-/*
-Funções de gerenciamento específico:
-- CriarAsteroide: Cria inimigos em posições específicas
-- AtualizarAsteroides/AtualizarTiros: Atualiza estados
-- VerificarColisoes: Detecção de colisões entre entidades
-*/
-
-void CriarAsteroide(int index, Vector2 pos, int tamanho);
-void AtualizarAsteroides();
-void AtualizarTiros();
-void VerificarColisoes();
-
-/* 
-Programa principal que controla o ciclo de vida do jogo:
-- Inicializa a janela e sistemas
-- Executa o loop principal de jogo
-- Gerencia recursos até o encerramento
-*/
+void IniciarJogo(); // Inicializa/reseta todos os elementos do jogo para o estado inicial
+void AtualizarJogo(); // Contém a lógica principal de atualização do jogo (chamada a cada frame)
+void DesenharJogo(); // Responsável por renderizar todos os elementos gráficos do jogo
+void CriarAsteroide(int index, Vector2 pos, int tamanho); //  Instancia um novo asteroide na posição especificada
+void AtualizarAsteroides(); // Atualiza posição e estado de todos os asteroides ativos
+void AtualizarTiros(); // Atualiza posição e estado de todos os tiros ativos
+void VerificarColisoes(); // Detecta colisões entre nave/tiros/asteroides e aplica as consequências
 
 int main() {
-    InitWindow(800, 600, "Asteroides BR");
-    SetTargetFPS(60);
+    InitWindow(800, 600, "Asteroides BR"); // Cria uma janela de 800x600 pixels com o título "Asteroides BR"
+    SetTargetFPS(60); // Define a taxa de atualização para 60 quadros por segundo
 
-    IniciarJogo();
+    IniciarJogo(); // Chama a função de inicialização do jogo
 
-    while (!WindowShouldClose()) {
-        AtualizarJogo();
-        DesenharJogo();
+    while (!WindowShouldClose()) { // Loop principal do jogo (executa enquanto a janela não for fechada)
+        AtualizarJogo(); // Atualiza a lógica do jogo
+        DesenharJogo(); // Renderiza os elementos do jogo
     }
 
-    CloseWindow();
+    CloseWindow(); // Fecha a janela quando o loop termina
     return 0;
 }
 
-/* 
-Inicializa todos os sistemas do jogo:
-- Configura o jogador com valores padrão
-- Prepara sistemas de pontuação e vidas
-- Cria pool de inimigos e projéteis 
-*/
-
 void IniciarJogo() {
-    nave = (Nave){
-        .posicao = {400, 300},
-        .velocidade = {0, 0},
-        .rotacao = 0, 
-        .aceleracao = {0, 0},
-        .ativo = true
+    nave = (Nave){ // Inicializa a estrutura da nave do jogador
+        .posicao = {400, 300}, // Posição inicial no centro da tela (400,300)
+        .velocidade = {0, 0}, // Velocidade inicial zero
+        .rotacao = 0, // Sem rotação inicial
+        .aceleracao = {0, 0}, // Sem aceleração inicial
+        .ativo = true // Nave ativa
     };
 
-    pontuacao = 0;
-    vidas = 5;
+    pontuacao = 0; // Zera a pontuação
+    vidas = 3; // Define 3 vidas iniciais
+
+    // A estrutura de repetição abaixo cria asteroides iniciais
 
     for (int i = 0; i < MAX_ASTEROIDES; i++) { 
-        CriarAsteroide(i, (Vector2){GetRandomValue(0, 800), GetRandomValue(0, 600)}, 3);
-    }
+        CriarAsteroide(i, (Vector2){(float)GetRandomValue(0, 800), (float)GetRandomValue(0, 600)}, 3);
+    } // Cria asteroides de tamanho 3 em posições aleatórias na tela
+
+    // A estrutura de repetição abaixo inicializa os tiros
 
     for (int i = 0; i < MAX_TIROS; i++) {
         tiros[i].ativo = false;
-    }
+    } // Define todos os tiros como inativos inicialmente
 }
 
-/*
-Gera inimigos com configurações específicas:
-- Posiciona em coordenadas aleatórias
-- Define propriedades baseadas no tipo (tamanho)
-- Configura sistemas de colisão adequados 
-*/
-
-void CriarAsteroide(int index, Vector2 pos, int tamanho) {
+void CriarAsteroide(int index, Vector2 pos, int tamanho) { //  Define a posição inicial do asteroide
     asteroides[index].posicao = pos; 
-    asteroides[index].velocidade = (Vector2){
-        (float)GetRandomValue(-15, 15) / 10.0f,
-        (float)GetRandomValue(-15, 15) / 10.0f
+    asteroides[index].velocidade = (Vector2){ // Atribui uma velocidade aleatória entre -1.5 e 1.5 em ambos os eixos
+        (float)GetRandomValue(-15, 15) / 10.0f, // Velocidade X aleatória
+        (float)GetRandomValue(-15, 15) / 10.0f // Velocidade Y aleatória
     }; 
-    asteroides[index].tamanho = tamanho;
-    asteroides[index].ativo = true;
+    asteroides[index].tamanho = tamanho; // Configura o tamanho do asteroide (3-grande, 2-médio, 1-pequeno)
+    asteroides[index].ativo = true; // Ativa o asteroide para que ele apareça no jogo
 
-    switch (tamanho) {
+    switch (tamanho) { // Define o raio de colisão baseado no tamanho do asteroide
         case 3: asteroides[index].raio = 40; 
-                break;
+                break; // Raio para asteroides grandes
         case 2: asteroides[index].raio = 25; 
-                break;
+                break; // Raio para asteroides médios
         case 1: asteroides[index].raio = 15; 
-                break;
+                break; // Raio para asteroides pequenos
         default: asteroides[index].raio = 20; 
-                break;
+                break; // Raio padrão para tamanhos inválidos
     } 
 }
 
@@ -250,12 +196,13 @@ void AtualizarJogo() {
     if (ativos <= MAX_ASTEROIDES / 3) {
         for (int i = 0; i < MAX_ASTEROIDES; i++) {
             if (!asteroides[i].ativo) {
-                Vector2 pos = {GetRandomValue(0, 800), GetRandomValue(0, 600)};
+                Vector2 pos = {(float)GetRandomValue(0, 800), (float)GetRandomValue(0, 600)};
                 CriarAsteroide(i, pos, 3);
             }
         }
     }
 }
+
 /*Percorre todos os asteroides do jogo.
 
 Para cada asteroide ativo:
@@ -338,8 +285,8 @@ void VerificarColisoes() {
                         for (int l = 0; l < MAX_ASTEROIDES; l++) {
                             if (!asteroides[l].ativo) {
                                 Vector2 posNovo = {
-                                    asteroides[j].posicao.x + GetRandomValue(-10, 10),
-                                    asteroides[j].posicao.y + GetRandomValue(-10, 10)
+                                    asteroides[j].posicao.x + (float)GetRandomValue(-10, 10),
+                                    asteroides[j].posicao.y + (float)GetRandomValue(-10, 10)
                                 };
                                 CriarAsteroide(l, posNovo, tamanhoNovo);
                                 break;
@@ -362,8 +309,9 @@ void VerificarColisoes() {
         - Calcula a distância entre o centro da nave e o centro do asteroide.
         - Se a distância for menor que o raio do asteroide mais 10 (tolerância para o tamanho da nave):
             - Diminui uma vida.
-            - Desativa a nave (pode indicar fim de jogo ou respawn).
-*/
+            - Se ainda houver vidas, reposiciona a nave.
+            - Se vidas chegar a zero, desativa a nave.
+    */
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
         if (!asteroides[i].ativo || !nave.ativo) continue;
 
@@ -373,11 +321,43 @@ void VerificarColisoes() {
 
         if (distancia < asteroides[i].raio + 10) {
             vidas--;
-            nave.ativo = false;
+            if (vidas > 0) {
+                // Reposiciona e reseta a nave para continuar jogando
+                nave.posicao = (Vector2){400, 300};
+                nave.velocidade = (Vector2){0, 0};
+                nave.aceleracao = (Vector2){0, 0};
+                nave.rotacao = 0;
+            } else {
+                nave.ativo = false; // Só desativa quando vidas acabam
+            }
+            break; // Importante para evitar múltiplas colisões no mesmo frame
         }
     }
 }
-// Rafael: comentar daqui pra baixo o resto do codigo e sua parte
+
+/*
+Esta função chamada DesenharJogo é responsável por desenhar a tela do jogo a cada frame.
+
+1. BeginDrawing(): Inicia o processo de desenho na tela, preparando para atualizar o que será mostrado.
+
+2. ClearBackground(BLACK): Limpa a tela preenchendo com a cor preta, para apagar o que foi desenhado antes.
+
+3. if (nave.ativo): Verifica se a nave está ativa (ou seja, se deve ser desenhada). Se não estiver ativa, nada é desenhado.
+
+4. Vector2 vertices[] = {...}: Calcula os três vértices de um triângulo que representa a nave.
+   - Cada vértice é calculado usando funções trigonométricas (seno e cosseno) para determinar a posição dos pontos considerando a rotação da nave.
+   - A nave é desenhada como um triângulo com tamanho fixo (20 unidades) apontando na direção da rotação atual.
+   - Os vértices são:
+     * A ponta da nave (frente), alinhada com a rotação.
+     * Dois vértices traseiros, posicionados a 150 graus para a direita e para a esquerda da rotação.
+
+5. DrawTriangleLines(...): Desenha as linhas do triângulo na tela, ligando os três vértices calculados.
+   - Os vértices são deslocados pela posição atual da nave (nave.posicao.x, nave.posicao.y).
+   - A cor usada para desenhar o triângulo é branca (WHITE).
+
+Resumindo: esta função limpa a tela e, se a nave estiver ativa, calcula e desenha um triângulo na posição e rotação atuais da nave, simulando sua forma e orientação no jogo.
+*/
+
 void DesenharJogo() {
     BeginDrawing();
     ClearBackground(BLACK);
@@ -397,30 +377,39 @@ void DesenharJogo() {
         );
     }
 
+    // Desenha os asteroides
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
         if (!asteroides[i].ativo) continue;
-
-        DrawCircleLines((int)asteroides[i].posicao.x, (int)asteroides[i].posicao.y, asteroides[i].raio, WHITE);
+        DrawCircleLines(
+            (int)asteroides[i].posicao.x,
+            (int)asteroides[i].posicao.y,
+            asteroides[i].raio,
+            WHITE
+        );
     }
 
+    // Desenha os tiros
     for (int i = 0; i < MAX_TIROS; i++) {
         if (!tiros[i].ativo) continue;
-
-        DrawCircle((int)tiros[i].posicao.x, (int)tiros[i].posicao.y, 3, RED);
+        DrawCircle(
+            (int)tiros[i].posicao.x,
+            (int)tiros[i].posicao.y,
+            3,
+            RED
+        );
     }
 
-    DrawText(TextFormat("Pontuação: %d", pontuacao), 10, 10, 20, WHITE);
-    DrawText(TextFormat("Vidas: %d", vidas), 10, 40, 20, WHITE);
+    // Exibe a pontuação e vidas
+    DrawText(TextFormat("Pontuacao: %d", pontuacao), 10, 10, 20, YELLOW);
+    DrawText(TextFormat("Vidas: %d", vidas), 10, 40, 20, GREEN);
 
-    if (!nave.ativo) {
-        DrawText("Nave destruída! Pressione R para reiniciar.", 200, 300, 20, RED);
+    // Mensagem de reinício se perdeu todas as vidas
+    if (!nave.ativo && vidas <= 0) {
+        DrawText("Nave destruida! Pressione R para reiniciar.", 200, 300, 20, RED);
         if (IsKeyPressed(KEY_R)) {
             IniciarJogo();
         }
     }
 
     EndDrawing();
-
 }
-
-
