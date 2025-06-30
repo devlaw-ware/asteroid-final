@@ -85,7 +85,7 @@ void IniciarJogo() {
     // A estrutura de repetição abaixo cria asteroides iniciais
 
     for (int i = 0; i < MAX_ASTEROIDES; i++) { 
-        CriarAsteroide(i, (Vector2){GetRandomValue(0, 800), GetRandomValue(0, 600)}, 3);
+        CriarAsteroide(i, (Vector2){(float)GetRandomValue(0, 800), (float)GetRandomValue(0, 600)}, 3);
     } // Cria asteroides de tamanho 3 em posições aleatórias na tela
 
     // A estrutura de repetição abaixo inicializa os tiros
@@ -196,12 +196,13 @@ void AtualizarJogo() {
     if (ativos <= MAX_ASTEROIDES / 3) {
         for (int i = 0; i < MAX_ASTEROIDES; i++) {
             if (!asteroides[i].ativo) {
-                Vector2 pos = {GetRandomValue(0, 800), GetRandomValue(0, 600)};
+                Vector2 pos = {(float)GetRandomValue(0, 800), (float)GetRandomValue(0, 600)};
                 CriarAsteroide(i, pos, 3);
             }
         }
     }
 }
+
 /*Percorre todos os asteroides do jogo.
 
 Para cada asteroide ativo:
@@ -284,8 +285,8 @@ void VerificarColisoes() {
                         for (int l = 0; l < MAX_ASTEROIDES; l++) {
                             if (!asteroides[l].ativo) {
                                 Vector2 posNovo = {
-                                    asteroides[j].posicao.x + GetRandomValue(-10, 10),
-                                    asteroides[j].posicao.y + GetRandomValue(-10, 10)
+                                    asteroides[j].posicao.x + (float)GetRandomValue(-10, 10),
+                                    asteroides[j].posicao.y + (float)GetRandomValue(-10, 10)
                                 };
                                 CriarAsteroide(l, posNovo, tamanhoNovo);
                                 break;
@@ -308,8 +309,9 @@ void VerificarColisoes() {
         - Calcula a distância entre o centro da nave e o centro do asteroide.
         - Se a distância for menor que o raio do asteroide mais 10 (tolerância para o tamanho da nave):
             - Diminui uma vida.
-            - Desativa a nave (pode indicar fim de jogo ou respawn).
-*/
+            - Se ainda houver vidas, reposiciona a nave.
+            - Se vidas chegar a zero, desativa a nave.
+    */
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
         if (!asteroides[i].ativo || !nave.ativo) continue;
 
@@ -319,11 +321,43 @@ void VerificarColisoes() {
 
         if (distancia < asteroides[i].raio + 10) {
             vidas--;
-            nave.ativo = false;
+            if (vidas > 0) {
+                // Reposiciona e reseta a nave para continuar jogando
+                nave.posicao = (Vector2){400, 300};
+                nave.velocidade = (Vector2){0, 0};
+                nave.aceleracao = (Vector2){0, 0};
+                nave.rotacao = 0;
+            } else {
+                nave.ativo = false; // Só desativa quando vidas acabam
+            }
+            break; // Importante para evitar múltiplas colisões no mesmo frame
         }
     }
 }
-// Rafael: comentar daqui pra baixo o resto do codigo e sua parte
+
+/*
+Esta função chamada DesenharJogo é responsável por desenhar a tela do jogo a cada frame.
+
+1. BeginDrawing(): Inicia o processo de desenho na tela, preparando para atualizar o que será mostrado.
+
+2. ClearBackground(BLACK): Limpa a tela preenchendo com a cor preta, para apagar o que foi desenhado antes.
+
+3. if (nave.ativo): Verifica se a nave está ativa (ou seja, se deve ser desenhada). Se não estiver ativa, nada é desenhado.
+
+4. Vector2 vertices[] = {...}: Calcula os três vértices de um triângulo que representa a nave.
+   - Cada vértice é calculado usando funções trigonométricas (seno e cosseno) para determinar a posição dos pontos considerando a rotação da nave.
+   - A nave é desenhada como um triângulo com tamanho fixo (20 unidades) apontando na direção da rotação atual.
+   - Os vértices são:
+     * A ponta da nave (frente), alinhada com a rotação.
+     * Dois vértices traseiros, posicionados a 150 graus para a direita e para a esquerda da rotação.
+
+5. DrawTriangleLines(...): Desenha as linhas do triângulo na tela, ligando os três vértices calculados.
+   - Os vértices são deslocados pela posição atual da nave (nave.posicao.x, nave.posicao.y).
+   - A cor usada para desenhar o triângulo é branca (WHITE).
+
+Resumindo: esta função limpa a tela e, se a nave estiver ativa, calcula e desenha um triângulo na posição e rotação atuais da nave, simulando sua forma e orientação no jogo.
+*/
+
 void DesenharJogo() {
     BeginDrawing();
     ClearBackground(BLACK);
@@ -343,30 +377,39 @@ void DesenharJogo() {
         );
     }
 
+    // Desenha os asteroides
     for (int i = 0; i < MAX_ASTEROIDES; i++) {
         if (!asteroides[i].ativo) continue;
-
-        DrawCircleLines((int)asteroides[i].posicao.x, (int)asteroides[i].posicao.y, asteroides[i].raio, WHITE);
+        DrawCircleLines(
+            (int)asteroides[i].posicao.x,
+            (int)asteroides[i].posicao.y,
+            asteroides[i].raio,
+            WHITE
+        );
     }
 
+    // Desenha os tiros
     for (int i = 0; i < MAX_TIROS; i++) {
         if (!tiros[i].ativo) continue;
-
-        DrawCircle((int)tiros[i].posicao.x, (int)tiros[i].posicao.y, 3, RED);
+        DrawCircle(
+            (int)tiros[i].posicao.x,
+            (int)tiros[i].posicao.y,
+            3,
+            RED
+        );
     }
 
-    DrawText(TextFormat("Pontuação: %d", pontuacao), 10, 10, 20, WHITE);
-    DrawText(TextFormat("Vidas: %d", vidas), 10, 40, 20, WHITE);
+    // Exibe a pontuação e vidas
+    DrawText(TextFormat("Pontuacao: %d", pontuacao), 10, 10, 20, YELLOW);
+    DrawText(TextFormat("Vidas: %d", vidas), 10, 40, 20, GREEN);
 
-    if (!nave.ativo) {
-        DrawText("Nave destruída! Pressione R para reiniciar.", 200, 300, 20, RED);
+    // Mensagem de reinício se perdeu todas as vidas
+    if (!nave.ativo && vidas <= 0) {
+        DrawText("Nave destruida! Pressione R para reiniciar.", 200, 300, 20, RED);
         if (IsKeyPressed(KEY_R)) {
             IniciarJogo();
         }
     }
 
     EndDrawing();
-
 }
-
-
