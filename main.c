@@ -53,13 +53,11 @@ typedef struct {
 
 // VARIÁVEIS GLOBAIS
 
-/*
-Contém todos os elementos do jogo:
+/* Contém todos os elementos do jogo:
 - Instância do jogador
 - Array de inimigos com limite máximo
 - Array de projéteis ativos
-- Pontuação e vidas do jogador 
-*/
+- Pontuação e vidas do jogador */
 
 Nave nave;
 Asteroide asteroides[MAX_ASTEROIDES];
@@ -69,35 +67,29 @@ int vidas = 5;
 
 // PROTÓTIPOS DE FUNÇÕES
 
-/*
-Funções principais do game loop:
+/* Funções principais do game loop:
 - IniciarJogo: Inicializa/reseta o estado do jogo
 - AtualizarJogo: Lógica principal por frame
-- DesenharJogo: Renderização gráfica 
-*/
+- DesenharJogo: Renderização gráfica */
 
 void IniciarJogo();
 void AtualizarJogo();
 void DesenharJogo();
 
-/*
-Funções de gerenciamento específico:
+/* Funções de gerenciamento específico:
 - CriarAsteroide: Cria inimigos em posições específicas
 - AtualizarAsteroides/AtualizarTiros: Atualiza estados
-- VerificarColisoes: Detecção de colisões entre entidades
-*/
+- VerificarColisoes: Detecção de colisões entre entidades */
 
 void CriarAsteroide(int index, Vector2 pos, int tamanho);
 void AtualizarAsteroides();
 void AtualizarTiros();
 void VerificarColisoes();
 
-/* 
-Programa principal que controla o ciclo de vida do jogo:
+/* Programa principal que controla o ciclo de vida do jogo:
 - Inicializa a janela e sistemas
 - Executa o loop principal de jogo
-- Gerencia recursos até o encerramento
-*/
+- Gerencia recursos até o encerramento */
 
 int main() {
     InitWindow(800, 600, "Asteroides BR");
@@ -114,12 +106,10 @@ int main() {
     return 0;
 }
 
-/* 
-Inicializa todos os sistemas do jogo:
+/* Inicializa todos os sistemas do jogo:
 - Configura o jogador com valores padrão
 - Prepara sistemas de pontuação e vidas
-- Cria pool de inimigos e projéteis 
-*/
+- Cria pool de inimigos e projéteis */
 
 void IniciarJogo() {
     nave = (Nave){
@@ -142,12 +132,10 @@ void IniciarJogo() {
     }
 }
 
-/*
-Gera inimigos com configurações específicas:
+/* Gera inimigos com configurações específicas:
 - Posiciona em coordenadas aleatórias
 - Define propriedades baseadas no tipo (tamanho)
-- Configura sistemas de colisão adequados 
-*/
+- Configura sistemas de colisão adequados */
 
 void CriarAsteroide(int index, Vector2 pos, int tamanho) {
     asteroides[index].posicao = pos; 
