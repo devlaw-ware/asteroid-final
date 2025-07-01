@@ -2,6 +2,16 @@
 #include "raylib.h"
 #include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+typedef enum {
+    MENU,
+    JOGO,
+    SAIR
+} EstadoJogo;
+
+EstadoJogo estadoAtual = MENU;
+
 
 #define MAX_ASTEROIDES 8
 #define MAX_TIROS 10
@@ -56,19 +66,42 @@ void AtualizarTiros(); // Atualiza posição e estado de todos os tiros ativos
 void VerificarColisoes(); // Detecta colisões entre nave/tiros/asteroides e aplica as consequências
 
 int main() {
-    InitWindow(800, 600, "Asteroides BR"); // Cria uma janela de 800x600 pixels com o título "Asteroides BR"
-    SetTargetFPS(60); // Define a taxa de atualização para 60 quadros por segundo
+    InitWindow(800, 600, "Asteroides BR");
+    SetTargetFPS(60);
 
-    IniciarJogo(); // Chama a função de inicialização do jogo
+    IniciarJogo();
 
-    while (!WindowShouldClose()) { // Loop principal do jogo (executa enquanto a janela não for fechada)
-        AtualizarJogo(); // Atualiza a lógica do jogo
-        DesenharJogo(); // Renderiza os elementos do jogo
+    while (!WindowShouldClose() && estadoAtual != SAIR) {
+        if (estadoAtual == MENU) {
+            // Atualiza o menu
+            if (IsKeyPressed(KEY_ONE)) {
+                IniciarJogo();
+                estadoAtual = JOGO;
+            } else if (IsKeyPressed(KEY_TWO)) {
+                estadoAtual = SAIR;
+            }
+            // Desenha o menu
+            BeginDrawing();
+            ClearBackground(BLACK);
+            DrawText("ASTEROIDS LAB-AED", 220, 120, 40, WHITE);
+            DrawText("1 - Jogar", 320, 250, 30, GREEN);
+            DrawText("2 - Sair", 320, 300, 30, RED);
+            EndDrawing();
+        } else if (estadoAtual == JOGO) {
+            AtualizarJogo();
+            DesenharJogo();
+
+            // Se a nave morrer, volta ao menu
+            if (!nave.ativo && vidas <= 0) {
+                estadoAtual = MENU;
+            }
+        }
     }
 
-    CloseWindow(); // Fecha a janela quando o loop termina
+    CloseWindow();
     return 0;
 }
+
 
 void IniciarJogo() {
     nave = (Nave){ // Inicializa a estrutura da nave do jogador
