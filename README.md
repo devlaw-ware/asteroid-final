@@ -1,6 +1,6 @@
 # Asteroids – LAB AED I Project
 
-**Asteroids Forms** is a simple game inspired by the classic Asteroids, developed in C using the raylib graphics library as part of the course *Laboratory of Algorithms and Data Structures I* - Computer Science.
+**Asteroids Shapes** is a simple game inspired by the classic Asteroids, developed in C using the raylib graphics library as part of the course *Laboratory of Algorithms and Data Structures I* - Computer Science.
 
 ## Description
 
