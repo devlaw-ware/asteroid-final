@@ -66,7 +66,7 @@ void AtualizarTiros(); // Atualiza posição e estado de todos os tiros ativos
 void VerificarColisoes(); // Detecta colisões entre nave/tiros/asteroides e aplica as consequências
 
 int main() {
-    InitWindow(800, 600, "Asteroides BR");
+    InitWindow(800, 600, "Asteroides Shapes ");
     SetTargetFPS(60);
 
     IniciarJogo();
@@ -150,12 +150,12 @@ void CriarAsteroide(int index, Vector2 pos, int tamanho) { //  Define a posiçã
 }
 
 void AtualizarJogo() {
-    //  Controle WASD corrigido: W diminui Y (sobe), S aumenta Y (desce)
+    // Controle WASD corrigido: W = frente (sobe), S = ré (desce)
     Vector2 direcao = {0, 0};
-    if (IsKeyDown(KEY_W)) direcao.y += 1; // sobe
-    if (IsKeyDown(KEY_S)) direcao.y -= 1; // desce
-    if (IsKeyDown(KEY_A)) direcao.x -= 1;
-    if (IsKeyDown(KEY_D)) direcao.x += 1;
+    if (IsKeyDown(KEY_W)) direcao.y -= 1; // W = frente (sobe)
+    if (IsKeyDown(KEY_S)) direcao.y += 1; // S = ré (desce)
+    if (IsKeyDown(KEY_A)) direcao.x -= 1; // esquerda
+    if (IsKeyDown(KEY_D)) direcao.x += 1; // direita
 
     if (direcao.x != 0 || direcao.y != 0) {
         float len = sqrtf(direcao.x * direcao.x + direcao.y * direcao.y);
@@ -234,7 +234,9 @@ void AtualizarJogo() {
             }
         }
     }
-}
+} 
+
+
 
 /*Percorre todos os asteroides do jogo.
 
