@@ -51,14 +51,6 @@ typedef struct {
     bool ativo;
 } Tiro;
 
-// VARIÁVEIS GLOBAIS
-
-/* Contém todos os elementos do jogo:
-- Instância do jogador
-- Array de inimigos com limite máximo
-- Array de projéteis ativos
-- Pontuação e vidas do jogador */
-
 Nave nave;
 Asteroide asteroides[MAX_ASTEROIDES];
 Tiro tiros[MAX_TIROS];
