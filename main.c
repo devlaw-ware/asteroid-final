@@ -143,7 +143,7 @@ void IniciarJogo() {
         .velocidade = {0, 0},
         .rotacao = 0, 
         .aceleracao = {0, 0},
-        .ativo = true;
+        .ativo = true
     };
 
     pontuacao = 0;
